@@ -41,8 +41,10 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
 
     def GetBook(self, request, context):
         if bd_node_id == 3:
+            print(f'Get book data in the Tail server (node id {bd_node_id}).')
             return self.books[request.request_id]
         else:
+            print(f'Redirect to the Tail server (current node id {bd_node_id}).')
             with grpc.insecure_channel("book_database_3:50056") as channel:
                 stub = book_database_grpc.BookDatabaseServiceStub(channel)
                 response = stub.GetBook(request)
@@ -52,7 +54,7 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
         # request # book_database.Book()
         if bd_node_id < total_nodes:
             next_bd_node_id = bd_node_id + 1
-            print(f'Head To Tail: {bd_node_id} to {next_bd_node_id}')
+            print(f'[Head To Tail]: node id {bd_node_id} to node id {next_bd_node_id}')
             next_bd_node_address = f'book_database_{next_bd_node_id}:50056'
             try:
                 with grpc.insecure_channel(next_bd_node_address) as channel:
@@ -64,6 +66,7 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
         elif bd_node_id == total_nodes: # if it reaches the Tail
             next_bd_node_id = bd_node_id
             next_bd_node_address = f'book_database_{next_bd_node_id}:50056'
+            print(f'[Tail]: node id {bd_node_id} We are the tail now. Start backpropargating.')
             try:
                 with grpc.insecure_channel(next_bd_node_address) as channel:
                     stub = book_database_grpc.BookDatabaseServiceStub(channel)
@@ -77,10 +80,10 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
         next_bd_node_id = bd_node_id - 1
 
         self.books[request.id] = request # Override the book information
-        print(bd_node_id, 'updated the book info')
+        print(f"Node id {bd_node_id}: Updated the book info")
 
         if 0 < next_bd_node_id: # if it reaches the Tail
-            print(f'Tail To Head: {bd_node_id} to {next_bd_node_id}')
+            print(f'[Tail To Head]: node id {bd_node_id} to node id {next_bd_node_id}')
             next_bd_node_address = f'book_database_{next_bd_node_id}:50056'
             try:
                 with grpc.insecure_channel(next_bd_node_address) as channel:
