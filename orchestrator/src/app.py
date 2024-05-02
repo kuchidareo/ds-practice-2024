@@ -18,6 +18,8 @@ from book_suggestion import book_suggestion_pb2 as book_suggestion
 from book_suggestion import book_suggestion_pb2_grpc as book_suggestion_grpc
 from order_queue import order_queue_pb2 as order_queue
 from order_queue import order_queue_pb2_grpc as order_queue_grpc
+from book_database import book_database_pb2 as book_database
+from book_database import book_database_pb2_grpc as book_database_grpc
 
 import grpc
 from concurrent import futures
@@ -57,6 +59,7 @@ def index():
     # Test the fraud-detection gRPC service.
     response = greet(name='orchestrator')
     # Return the response.
+
     return response
 
 def orderid_storage_fraud_service(order_id):
@@ -142,6 +145,15 @@ def checkout():
     # Print request object data
     print("Request Data:", request.json)
     data = request.json
+    
+
+    # with grpc.insecure_channel('book_database_1:50056') as channel:
+    #     stub = book_database_grpc.BookDatabaseServiceStub(channel)
+    #     response = stub.GetBook(book_database.GetBookRequest(**{
+    #         "request_id": "1",
+    #     }))
+    #     print(response) # class: book_database.Book()
+
 
     vector_clock = {}
     vector_clock = increment_vector_clock(vector_clock)
