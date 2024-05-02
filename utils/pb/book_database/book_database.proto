@@ -35,9 +35,7 @@ message Tail2HeadResponse {
 service BookDatabaseService {
   rpc AddBook(Book) returns (Head2TailResponse);
   rpc GetBook(GetBookRequest) returns (Book);
-  rpc ListBooks(Empty) returns (BookList);
   rpc UpdateBook(Book) returns (Head2TailResponse);
-  rpc DeleteBook(GetBookRequest) returns (Head2TailResponse);
   rpc Head2Tail(Book) returns (Head2TailResponse);
   rpc Tail2Head(Book) returns (Tail2HeadResponse);
 }

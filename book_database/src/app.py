@@ -32,12 +32,6 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
             stub = book_database_grpc.BookDatabaseServiceStub(channel)
             response = stub.Head2Tail(request)
         return response
-
-    def GetBook(self, request, context):
-        return self.books[request.request_id]
-    
-    def ListBooks(self, request, context):
-        return None
     
     def UpdateBook(self, request, context):
         with grpc.insecure_channel("book_database_1:50056") as channel:
@@ -45,8 +39,14 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
             response = stub.Head2Tail(request)
         return response
 
-    def DeleteBook(self, request, context):
-        return None
+    def GetBook(self, request, context):
+        if bd_node_id == 3:
+            return self.books[request.request_id]
+        else:
+            with grpc.insecure_channel("book_database_3:50056") as channel:
+                stub = book_database_grpc.BookDatabaseServiceStub(channel)
+                response = stub.GetBook(request)
+            return response
     
     def Head2Tail(self, request, context):
         # request # book_database.Book()

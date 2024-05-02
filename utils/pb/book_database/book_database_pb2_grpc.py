@@ -24,19 +24,9 @@ class BookDatabaseServiceStub(object):
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.SerializeToString,
                 response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
                 )
-        self.ListBooks = channel.unary_unary(
-                '/book_database.BookDatabaseService/ListBooks',
-                request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.BookList.FromString,
-                )
         self.UpdateBook = channel.unary_unary(
                 '/book_database.BookDatabaseService/UpdateBook',
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
-                )
-        self.DeleteBook = channel.unary_unary(
-                '/book_database.BookDatabaseService/DeleteBook',
-                request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.SerializeToString,
                 response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
                 )
         self.Head2Tail = channel.unary_unary(
@@ -66,19 +56,7 @@ class BookDatabaseServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ListBooks(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def UpdateBook(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def DeleteBook(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -109,19 +87,9 @@ def add_BookDatabaseServiceServicer_to_server(servicer, server):
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.FromString,
                     response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
             ),
-            'ListBooks': grpc.unary_unary_rpc_method_handler(
-                    servicer.ListBooks,
-                    request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.BookList.SerializeToString,
-            ),
             'UpdateBook': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateBook,
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
-            ),
-            'DeleteBook': grpc.unary_unary_rpc_method_handler(
-                    servicer.DeleteBook,
-                    request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.FromString,
                     response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
             ),
             'Head2Tail': grpc.unary_unary_rpc_method_handler(
@@ -179,23 +147,6 @@ class BookDatabaseService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ListBooks(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/ListBooks',
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.BookList.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
     def UpdateBook(request,
             target,
             options=(),
@@ -208,23 +159,6 @@ class BookDatabaseService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/UpdateBook',
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def DeleteBook(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/DeleteBook',
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.SerializeToString,
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
