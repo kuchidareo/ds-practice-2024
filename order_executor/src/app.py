@@ -15,6 +15,8 @@ from order_queue import order_queue_pb2 as order_queue
 from order_queue import order_queue_pb2_grpc as order_queue_grpc
 from order_executor import order_executor_pb2 as order_executor
 from order_executor import order_executor_pb2_grpc as order_executor_grpc
+from book_database import book_database_pb2 as book_database
+from book_database import book_database_pb2_grpc as book_database_grpc
 
 import grpc
 from concurrent import futures
@@ -52,6 +54,32 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     
     def execute_order(self, order):
         self.is_busy = True # to indicate when they do not need the critical regiion
+
+        ############################################
+        ### LOOK AT ME OBED!!
+        ### Example execution here. get the book data, change the available counts.
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            book = stub.GetBook(book_database.GetBookRequest(
+                request_id="1" # Learning Python
+            ))
+        print(f'Fetch the book data: title {book.title}')
+        print(f'books available: {book.copiesAvailable}')
+        book.copiesAvailable -= 1
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            response = stub.UpdateBook(book)
+        print(f'Changed the copiesAvailable')
+
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            book = stub.GetBook(book_database.GetBookRequest(
+                request_id="1" # Learning Python
+            ))
+        print(f'ReFetch the book data: title {book.title}')
+        print(f'books available: {book.copiesAvailable}')
+        ############################################
+
 
         print(f"Order with id {order.orderId} with priority {order.priority} is being executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order
