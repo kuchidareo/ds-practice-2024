@@ -17,7 +17,7 @@ class BookDatabaseServiceStub(object):
         self.AddBook = channel.unary_unary(
                 '/book_database.BookDatabaseService/AddBook',
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
                 )
         self.GetBook = channel.unary_unary(
                 '/book_database.BookDatabaseService/GetBook',
@@ -32,12 +32,22 @@ class BookDatabaseServiceStub(object):
         self.UpdateBook = channel.unary_unary(
                 '/book_database.BookDatabaseService/UpdateBook',
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
                 )
         self.DeleteBook = channel.unary_unary(
                 '/book_database.BookDatabaseService/DeleteBook',
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.FromString,
+                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
+                )
+        self.Head2Tail = channel.unary_unary(
+                '/book_database.BookDatabaseService/Head2Tail',
+                request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
+                )
+        self.Tail2Head = channel.unary_unary(
+                '/book_database.BookDatabaseService/Tail2Head',
+                request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.FromString,
                 )
 
 
@@ -74,13 +84,25 @@ class BookDatabaseServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Head2Tail(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Tail2Head(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_BookDatabaseServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'AddBook': grpc.unary_unary_rpc_method_handler(
                     servicer.AddBook,
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
             ),
             'GetBook': grpc.unary_unary_rpc_method_handler(
                     servicer.GetBook,
@@ -95,12 +117,22 @@ def add_BookDatabaseServiceServicer_to_server(servicer, server):
             'UpdateBook': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateBook,
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
             ),
             'DeleteBook': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteBook,
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.SerializeToString,
+                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
+            ),
+            'Head2Tail': grpc.unary_unary_rpc_method_handler(
+                    servicer.Head2Tail,
+                    request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
+            ),
+            'Tail2Head': grpc.unary_unary_rpc_method_handler(
+                    servicer.Tail2Head,
+                    request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -125,7 +157,7 @@ class BookDatabaseService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/AddBook',
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -176,7 +208,7 @@ class BookDatabaseService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/UpdateBook',
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -193,6 +225,40 @@ class BookDatabaseService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/DeleteBook',
             utils_dot_pb_dot_book__database_dot_book__database__pb2.GetBookRequest.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Empty.FromString,
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Head2Tail(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/Head2Tail',
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Tail2Head(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/Tail2Head',
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
+            utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

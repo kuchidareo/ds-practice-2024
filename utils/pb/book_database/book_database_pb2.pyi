@@ -42,3 +42,15 @@ class BookList(_message.Message):
     BOOKS_FIELD_NUMBER: _ClassVar[int]
     books: _containers.RepeatedCompositeFieldContainer[Book]
     def __init__(self, books: _Optional[_Iterable[_Union[Book, _Mapping]]] = ...) -> None: ...
+
+class Head2TailResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
+
+class Tail2HeadResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
