@@ -15,10 +15,12 @@ from order_queue import order_queue_pb2 as order_queue
 from order_queue import order_queue_pb2_grpc as order_queue_grpc
 from order_executor import order_executor_pb2 as order_executor
 from order_executor import order_executor_pb2_grpc as order_executor_grpc
+from book_database import book_database_pb2 as book_database
+from book_database import book_database_pb2_grpc as book_database_grpc
 from payment_executor import payment_executor_pb2 as payment_executor
 from payment_executor import payment_executor_pb2_grpc as payment_executor_grpc
-# from book_database import book_database_pb2 as book_database
-# from book_database import book_database_pb2_grpc as book_database_grpc
+from book_database import book_database_pb2 as book_database
+from book_database import book_database_pb2_grpc as book_database_grpc
 
 import grpc
 from concurrent import futures
@@ -39,15 +41,15 @@ def dequeue():
     return response
 
 def send_vote_request_to_payment_executor():
-    print("Order Exector: Phase 1a - Sending vote request to Payment Executor.")
+    print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Payment Executor.")
     with grpc.insecure_channel('payment_executor:50059') as channel:
-        stub = payment_executor_grpc.PaymentExecutorStub(channel)
+        stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
         response = stub.SendVoteToCoordinator(payment_executor.VoteCommitRequest())
         return response.success
     
 def send_vote_request_to_book_database():
-    print("Order Exector: Phase 1a - Sending vote request to Book Database.")
-    with grpc.insecure_channel('book_database:50057') as channel:
+    print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Book Database.")
+    with grpc.insecure_channel('book_database_1:50056') as channel:
         stub = book_database_grpc.BookDatabaseServiceStub(channel)
         response = stub.SendVoteToCoordinator(book_database.VoteCommitRequest())
         return response.success
@@ -75,16 +77,14 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
 
         futures.wait([payment_executor_vote, book_database_vote], return_when=futures.ALL_COMPLETED)
 
-        if not payment_executor_vote:
-            print("Order Exector: Phase 2a - Received VOTE ABORT from Payment Executor. Will send GLOBAL ABORT")
-        if not book_database_vote:
-            print("Order Exector: Phase 2a - Received VOTE ABORT from Book Database. Will send GLOBAL ABORT")
-        if payment_executor_vote and book_database_vote:
-            print("Order Exector: Phase 2a - Received VOTE COMMIT from both participants. Will send GLOBAL COMMIT")
+        if not payment_executor_vote.result():
+            print(f"Phase 2a - Order Executor-{replica_id}: Received VOTE ABORT from Payment Executor. Will send GLOBAL ABORT")
+        if not book_database_vote.result():
+            print(f"Phase 2a - Order Executor-{replica_id}: Received VOTE ABORT from Book Database. Will send GLOBAL ABORT")
+        if payment_executor_vote.result() and book_database_vote.result():
+            print(f"Phase 2a - Order Executor-{replica_id}: Received VOTE COMMIT from both participants. Will send GLOBAL COMMIT")
 
-        return payment_executor_vote and book_database_vote
-        
-
+        return payment_executor_vote.result() and book_database_vote.result()
         
     
     # def SendGlobalCommit(self, request, context):
@@ -94,15 +94,46 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     def execute_order(self, order):
         self.is_busy = True # to indicate when they do not need the critical regiion
 
-        global_commit = self.SendVoteRequestToParticipants().response
+        global_commit = self.SendVoteRequestToParticipants()
+        print(f"global_commit ={type(global_commit)}= {global_commit}")
 
         with grpc.insecure_channel('payment_executor:50059') as channel:
-            stub = payment_executor_grpc.PaymentExecutionServiceStub(channel)
-            response = stub.ExecutePayment(payment_executor.PaymentExectionRequest(), global_commit)
+            stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
+            print(f"stub  ={type(stub )}= {stub }")
+            response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
             if response.success:
                 print(f"Payment execution was a success")
+        
+        ############################################
+        ### LOOK AT ME OBED!!
+        ### Example execution here. get the book data, change the available counts.
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            book = stub.GetBook(book_database.GetBookRequest(
+                request_id="1", # Learning Python
+                commitStatus=global_commit
+            ), global_commit)
+        print(f'Fetch the book data: title {book.title}')
+        print(f'books available: {book.copiesAvailable}')
+        book.copiesAvailable -= 1
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            response = stub.UpdateBook(book_database.UpdateBookRequest(
+                book=book, 
+                commitStatus=global_commit))
+        print(f'Changed the copiesAvailable')
 
-        print(f"Order with id {order.orderId} with priority {order.priority} is being executed by executor Replica-{replica_id} ...")
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            book = stub.GetBook(book_database.GetBookRequest(
+                request_id="1", # Learning Python
+                commitStatus=global_commit
+            ))
+        print(f'ReFetch the book data: title {book.title}')
+        print(f'books available: {book.copiesAvailable}')
+        ############################################
+
+        print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order
         self.is_busy = False
 

@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package book_database;
+
+message GetBookRequest {
+  string request_id = 1;
+}
+
+message Empty {}
+
+message Book {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  string description = 4;
+  int32 copies= 5;
+  int32 copiesAvailable = 6;
+  string category = 7;
+  string img = 8;
+  float price = 9;
+}
+
+message BookList {
+  repeated Book books = 1;
+}
+
+message Head2TailResponse {
+  bool success = 1;
+}
+
+message Tail2HeadResponse {
+  bool success = 1;
+}
+
+service BookDatabaseService {
+  rpc AddBook(Book) returns (Head2TailResponse);
+  rpc GetBook(GetBookRequest) returns (Book);
+  rpc UpdateBook(Book) returns (Head2TailResponse);
+  rpc Head2Tail(Book) returns (Head2TailResponse);
+  rpc Tail2Head(Book) returns (Tail2HeadResponse);
+}
