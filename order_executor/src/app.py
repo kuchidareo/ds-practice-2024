@@ -104,34 +104,35 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
             if response.success:
                 print(f"Payment execution was a success")
         
-        ############################################
-        ### LOOK AT ME OBED!!
-        ### Example execution here. get the book data, change the available counts.
+        # Get the book data,
+        print(f'[Order Executor] Send request of getting the book data. requesting book_id is 1')
         with grpc.insecure_channel('book_database_1:50056') as channel:
             stub = book_database_grpc.BookDatabaseServiceStub(channel)
             book = stub.GetBook(book_database.GetBookRequest(
                 request_id="1", # Learning Python
                 commitStatus=global_commit
             ), global_commit)
-        print(f'Fetch the book data: title {book.title}')
-        print(f'books available: {book.copiesAvailable}')
+
+        # Change the available counts.
         book.copiesAvailable -= 1
+        print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+1} to {book.copiesAvailable}')
+        print(f'[Order Executor] Send request of updating the book data.')
         with grpc.insecure_channel('book_database_1:50056') as channel:
             stub = book_database_grpc.BookDatabaseServiceStub(channel)
             response = stub.UpdateBook(book_database.UpdateBookRequest(
                 book=book, 
                 commitStatus=global_commit))
-        print(f'Changed the copiesAvailable')
+        if response.success:
+            print(f'[Order Executor] Confirmed the update is success.')
+            print(f'[Order Executor] Reaccess to the book database.')
 
-        with grpc.insecure_channel('book_database_1:50056') as channel:
-            stub = book_database_grpc.BookDatabaseServiceStub(channel)
-            book = stub.GetBook(book_database.GetBookRequest(
-                request_id="1", # Learning Python
-                commitStatus=global_commit
-            ))
-        print(f'ReFetch the book data: title {book.title}')
-        print(f'books available: {book.copiesAvailable}')
-        ############################################
+            with grpc.insecure_channel('book_database_1:50056') as channel:
+                stub = book_database_grpc.BookDatabaseServiceStub(channel)
+                book = stub.GetBook(book_database.GetBookRequest(
+                    request_id="1", # Learning Python
+                    commitStatus=global_commit
+                ))
+            print(f'[Order Executor] Reaccessed book data {book}')
 
         print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order

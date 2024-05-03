@@ -145,22 +145,6 @@ def checkout():
     # Print request object data
     print("Request Data:", request.json)
     data = request.json
-    
-
-    with grpc.insecure_channel('book_database_1:50056') as channel:
-        stub = book_database_grpc.BookDatabaseServiceStub(channel)
-        response = stub.AddBook(book_database.Book(**{
-            "id": "10",
-            "title": "Learning Python",
-            "author": "John Smith",
-            "description": "An in-depth guide to Python programming.",
-            "copies": 10,
-            "copiesAvailable": 7-1,
-            "category": "Programming",
-            "img": "https://m.media-amazon.com/images/W/MEDIAX_792452-T1/images/I/51FD3C3kLiL.jpg",
-            "price": 3
-        }))
-
 
     vector_clock = {}
     vector_clock = increment_vector_clock(vector_clock)
