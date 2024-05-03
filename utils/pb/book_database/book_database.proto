@@ -34,10 +34,6 @@ message Head2TailResponse {
   bool success = 1;
 }
 
-message Tail2HeadResponse {
-  bool success = 1;
-}
-
 message VoteCommitRequest {}
 
 message VoteCommitResponse {
@@ -50,6 +46,5 @@ service BookDatabaseService {
   rpc GetBook(GetBookRequest) returns (Book);
   rpc UpdateBook(UpdateBookRequest) returns (Head2TailResponse);
   rpc Head2Tail(Book) returns (Head2TailResponse);
-  rpc Tail2Head(Book) returns (Tail2HeadResponse);
   rpc SendVoteToCoordinator(VoteCommitRequest) returns (VoteCommitResponse);
 }

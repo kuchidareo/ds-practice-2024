@@ -63,10 +63,6 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
             return False
     
     def Head2Tail(self, request, context):
-        self.books[request.id] = request # Override the book information
-        print(f"[Node id {bd_node_id}]: Updating the book info")
-        print(f"[Node id {bd_node_id}]: Updated the book database {self.books[request.id]}")
-
         if bd_node_id < total_nodes:
             next_bd_node_id = bd_node_id + 1
             print(f'[Head To Tail]: node id {bd_node_id} to node id {next_bd_node_id}')
@@ -75,6 +71,11 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
                 with grpc.insecure_channel(next_bd_node_address) as channel:
                     stub = book_database_grpc.BookDatabaseServiceStub(channel)
                     response = stub.Head2Tail(request)
+                    if response.success:
+                        print(f'[Tail To Head]: node id {bd_node_id} got the result. Success.')
+                        self.books[request.id] = request # Override the book information
+                        print(f"[Node id {bd_node_id}]: Updating the book info")
+                        print(f"[Node id {bd_node_id}]: Updated the book database {self.books[request.id]}")
                     return response
             except grpc.RpcError as e:
                     print(f"Could not reach Update-commitment-{next_bd_node_id}: Inactive Service")
@@ -82,31 +83,11 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
             next_bd_node_id = bd_node_id
             next_bd_node_address = f'book_database_{next_bd_node_id}:50056'
             print(f'[Tail]: node id {bd_node_id} We are the tail now. Start backpropargating and tell the result.')
-            try:
-                with grpc.insecure_channel(next_bd_node_address) as channel:
-                    stub = book_database_grpc.BookDatabaseServiceStub(channel)
-                    response = stub.Tail2Head(request)
-                    return book_database.Head2TailResponse(success=response.success)
-            except grpc.RpcError as e:
-                    print(f"Could not reach Update-commitment-{next_bd_node_id}: Inactive Service")
+            self.books[request.id] = request # Override the book information
+            print(f"[Node id {bd_node_id}]: Updating the book info")
+            print(f"[Node id {bd_node_id}]: Updated the book database {self.books[request.id]}")
+            return book_database.Head2TailResponse(success=True)
 
-    def Tail2Head(self, request, context):
-        # request # book_database.Book()
-        next_bd_node_id = bd_node_id - 1
-
-        if 0 < next_bd_node_id: # if it reaches the Tail
-            print(f'[Tail To Head]: node id {bd_node_id} to node id {next_bd_node_id}')
-            next_bd_node_address = f'book_database_{next_bd_node_id}:50056'
-            try:
-                with grpc.insecure_channel(next_bd_node_address) as channel:
-                    stub = book_database_grpc.BookDatabaseServiceStub(channel)
-                    response = stub.Tail2Head(request)
-                    return response
-            except grpc.RpcError as e:
-                    print(f"Could not reach Update-commitment-{next_bd_node_id}: Inactive Service")
-        else:
-            return book_database.Tail2HeadResponse(success=True)
-        
     def SendVoteToCoordinator(self, request, context): 
         print("Phase 1b - Database Service: Vote request received. Sending VOTE COMMIT to order executor\n")
         return book_database.VoteCommitResponse(success=True)

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n*utils/pb/book_database/book_database.proto\x12\rbook_database\":\n\x0eGetBookRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0c\x63ommitStatus\x18\x02 \x01(\x08\"L\n\x11UpdateBookRequest\x12!\n\x04\x62ook\x18\x01 \x01(\x0b\x32\x13.book_database.Book\x12\x14\n\x0c\x63ommitStatus\x18\x02 \x01(\x08\"\x07\n\x05\x45mpty\"\x9d\x01\n\x04\x42ook\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0e\n\x06\x63opies\x18\x05 \x01(\x05\x12\x17\n\x0f\x63opiesAvailable\x18\x06 \x01(\x05\x12\x10\n\x08\x63\x61tegory\x18\x07 \x01(\t\x12\x0b\n\x03img\x18\x08 \x01(\t\x12\r\n\x05price\x18\t \x01(\x02\".\n\x08\x42ookList\x12\"\n\x05\x62ooks\x18\x01 \x03(\x0b\x32\x13.book_database.Book\"$\n\x11Head2TailResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"$\n\x11Tail2HeadResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\x13\n\x11VoteCommitRequest\"%\n\x12VoteCommitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\xce\x03\n\x13\x42ookDatabaseService\x12@\n\x07\x41\x64\x64\x42ook\x12\x13.book_database.Book\x1a .book_database.Head2TailResponse\x12=\n\x07GetBook\x12\x1d.book_database.GetBookRequest\x1a\x13.book_database.Book\x12P\n\nUpdateBook\x12 .book_database.UpdateBookRequest\x1a .book_database.Head2TailResponse\x12\x42\n\tHead2Tail\x12\x13.book_database.Book\x1a .book_database.Head2TailResponse\x12\x42\n\tTail2Head\x12\x13.book_database.Book\x1a .book_database.Tail2HeadResponse\x12\\\n\x15SendVoteToCoordinator\x12 .book_database.VoteCommitRequest\x1a!.book_database.VoteCommitResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n*utils/pb/book_database/book_database.proto\x12\rbook_database\":\n\x0eGetBookRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0c\x63ommitStatus\x18\x02 \x01(\x08\"L\n\x11UpdateBookRequest\x12!\n\x04\x62ook\x18\x01 \x01(\x0b\x32\x13.book_database.Book\x12\x14\n\x0c\x63ommitStatus\x18\x02 \x01(\x08\"\x07\n\x05\x45mpty\"\x9d\x01\n\x04\x42ook\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x0e\n\x06\x63opies\x18\x05 \x01(\x05\x12\x17\n\x0f\x63opiesAvailable\x18\x06 \x01(\x05\x12\x10\n\x08\x63\x61tegory\x18\x07 \x01(\t\x12\x0b\n\x03img\x18\x08 \x01(\t\x12\r\n\x05price\x18\t \x01(\x02\".\n\x08\x42ookList\x12\"\n\x05\x62ooks\x18\x01 \x03(\x0b\x32\x13.book_database.Book\"$\n\x11Head2TailResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\x13\n\x11VoteCommitRequest\"%\n\x12VoteCommitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x8a\x03\n\x13\x42ookDatabaseService\x12@\n\x07\x41\x64\x64\x42ook\x12\x13.book_database.Book\x1a .book_database.Head2TailResponse\x12=\n\x07GetBook\x12\x1d.book_database.GetBookRequest\x1a\x13.book_database.Book\x12P\n\nUpdateBook\x12 .book_database.UpdateBookRequest\x1a .book_database.Head2TailResponse\x12\x42\n\tHead2Tail\x12\x13.book_database.Book\x1a .book_database.Head2TailResponse\x12\\\n\x15SendVoteToCoordinator\x12 .book_database.VoteCommitRequest\x1a!.book_database.VoteCommitResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,12 +33,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_BOOKLIST']._serialized_end=414
   _globals['_HEAD2TAILRESPONSE']._serialized_start=416
   _globals['_HEAD2TAILRESPONSE']._serialized_end=452
-  _globals['_TAIL2HEADRESPONSE']._serialized_start=454
-  _globals['_TAIL2HEADRESPONSE']._serialized_end=490
-  _globals['_VOTECOMMITREQUEST']._serialized_start=492
-  _globals['_VOTECOMMITREQUEST']._serialized_end=511
-  _globals['_VOTECOMMITRESPONSE']._serialized_start=513
-  _globals['_VOTECOMMITRESPONSE']._serialized_end=550
-  _globals['_BOOKDATABASESERVICE']._serialized_start=553
-  _globals['_BOOKDATABASESERVICE']._serialized_end=1015
+  _globals['_VOTECOMMITREQUEST']._serialized_start=454
+  _globals['_VOTECOMMITREQUEST']._serialized_end=473
+  _globals['_VOTECOMMITRESPONSE']._serialized_start=475
+  _globals['_VOTECOMMITRESPONSE']._serialized_end=512
+  _globals['_BOOKDATABASESERVICE']._serialized_start=515
+  _globals['_BOOKDATABASESERVICE']._serialized_end=909
 # @@protoc_insertion_point(module_scope)

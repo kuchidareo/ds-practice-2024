@@ -59,12 +59,6 @@ class Head2TailResponse(_message.Message):
     success: bool
     def __init__(self, success: bool = ...) -> None: ...
 
-class Tail2HeadResponse(_message.Message):
-    __slots__ = ("success",)
-    SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    success: bool
-    def __init__(self, success: bool = ...) -> None: ...
-
 class VoteCommitRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

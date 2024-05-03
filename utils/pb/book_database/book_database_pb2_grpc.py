@@ -34,11 +34,6 @@ class BookDatabaseServiceStub(object):
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
                 response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
                 )
-        self.Tail2Head = channel.unary_unary(
-                '/book_database.BookDatabaseService/Tail2Head',
-                request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-                response_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.FromString,
-                )
         self.SendVoteToCoordinator = channel.unary_unary(
                 '/book_database.BookDatabaseService/SendVoteToCoordinator',
                 request_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.VoteCommitRequest.SerializeToString,
@@ -73,12 +68,6 @@ class BookDatabaseServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Tail2Head(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def SendVoteToCoordinator(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -107,11 +96,6 @@ def add_BookDatabaseServiceServicer_to_server(servicer, server):
                     servicer.Head2Tail,
                     request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
                     response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.SerializeToString,
-            ),
-            'Tail2Head': grpc.unary_unary_rpc_method_handler(
-                    servicer.Tail2Head,
-                    request_deserializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.FromString,
-                    response_serializer=utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.SerializeToString,
             ),
             'SendVoteToCoordinator': grpc.unary_unary_rpc_method_handler(
                     servicer.SendVoteToCoordinator,
@@ -193,23 +177,6 @@ class BookDatabaseService(object):
         return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/Head2Tail',
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
             utils_dot_pb_dot_book__database_dot_book__database__pb2.Head2TailResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def Tail2Head(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/book_database.BookDatabaseService/Tail2Head',
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Book.SerializeToString,
-            utils_dot_pb_dot_book__database_dot_book__database__pb2.Tail2HeadResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
