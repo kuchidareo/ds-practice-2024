@@ -17,18 +17,18 @@ import grpc
 from concurrent import futures
 
 
-class PaymentExecutionService(payment_executor_grpc.PaymentExecutionServiceServicer):
+class PaymentExecutorService(payment_executor_grpc.PaymentExecutorServiceServicer):
     def ExecutePayment(self, request, context):
         response = False
-        if request.global_commit: 
-            print("Phase 2b - GLOBAL COMMIT received from cordinator")
+        if request.commitStatus: 
+            print("Phase 2b - Payment Executor: GLOBAL COMMIT received from cordinator")
             print("Payment execution is being processed")
         else:
-            print("Phase 2b - GLOBAL ABORT received from cordinator")
+            print("Phase 2b - Payment Executor: GLOBAL ABORT received from cordinator")
             print("Payment execution is being aborted")
-        return payment_executor.ExecutePaymentResponse(success=response)
+        return payment_executor.PaymentExecutionResponse(success=response)
 
-    def SendVoteToCordinator(self, request, context): 
+    def SendVoteToCoordinator(self, request, context): 
         #Dummy logic. Sends vote commit 95% of the time and abort the otehr 5%
         response = random.choices([True, False], weights=[95, 5], k=1)[0]
         if response:
@@ -42,9 +42,9 @@ def serve():
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor())
     # Add HelloService
-    payment_executor_grpc.add_PaymentExecutionServiceServicer_to_server(PaymentExecutionService(), server)
+    payment_executor_grpc.add_PaymentExecutorServiceServicer_to_server(PaymentExecutorService(), server)
     # Listen on port 50059
-    port = "50096"
+    port = "50059"
     server.add_insecure_port("[::]:" + port)
     # Start the server
     server.start()

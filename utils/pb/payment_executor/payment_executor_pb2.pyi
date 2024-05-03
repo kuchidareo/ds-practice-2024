@@ -5,8 +5,10 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class PaymentExecutionRequest(_message.Message):
-    __slots__ = ()
-    def __init__(self) -> None: ...
+    __slots__ = ("commitStatus",)
+    COMMITSTATUS_FIELD_NUMBER: _ClassVar[int]
+    commitStatus: bool
+    def __init__(self, commitStatus: bool = ...) -> None: ...
 
 class PaymentExecutionResponse(_message.Message):
     __slots__ = ("success",)

@@ -34,21 +34,33 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
         return response
     
     def UpdateBook(self, request, context):
-        with grpc.insecure_channel("book_database_1:50056") as channel:
-            stub = book_database_grpc.BookDatabaseServiceStub(channel)
-            response = stub.Head2Tail(request)
-        return response
+        if request.commitStatus: 
+            print("Phase 2b - GLOBAL COMMIT received from coordinator")
+            with grpc.insecure_channel("book_database_1:50056") as channel:
+                stub = book_database_grpc.BookDatabaseServiceStub(channel)
+                response = stub.Head2Tail(request.book)
+            return response
+        else:
+            print("Phase 2b - GLOBAL ABORT received from cordinator")
+            print("Nothing executed in database")
+            return False
 
     def GetBook(self, request, context):
-        if bd_node_id == 3:
-            print(f'Get book data in the Tail server (node id {bd_node_id}).')
-            return self.books[request.request_id]
+        if request.commitStatus: 
+            print("Phase 2b - Database Service: GLOBAL COMMIT received from coordinator")
+            if bd_node_id == 3:
+                print(f'Get book data in the Tail server (node id {bd_node_id}).')
+                return self.books[request.request_id]
+            else:
+                print(f'Redirect to the Tail server (current node id {bd_node_id}).')
+                with grpc.insecure_channel("book_database_3:50056") as channel:
+                    stub = book_database_grpc.BookDatabaseServiceStub(channel)
+                    response = stub.GetBook(request)
+                return response
         else:
-            print(f'Redirect to the Tail server (current node id {bd_node_id}).')
-            with grpc.insecure_channel("book_database_3:50056") as channel:
-                stub = book_database_grpc.BookDatabaseServiceStub(channel)
-                response = stub.GetBook(request)
-            return response
+            print("Phase 2b - Database Service: GLOBAL ABORT received from cordinator")
+            print("Nothing executed in database")
+            return False
     
     def Head2Tail(self, request, context):
         # request # book_database.Book()
@@ -94,6 +106,10 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
                     print(f"Could not reach Update-commitment-{next_bd_node_id}: Inactive Service")
         else:
             return book_database.Tail2HeadResponse(success=True)
+        
+    def SendVoteToCoordinator(self, request, context): 
+        print("Phase 1b - Database Service: Vote request received. Sending VOTE COMMIT to order executor\n")
+        return book_database.VoteCommitResponse(success=True)
 
 
 def serve():

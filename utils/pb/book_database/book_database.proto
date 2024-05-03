@@ -4,6 +4,12 @@ package book_database;
 
 message GetBookRequest {
   string request_id = 1;
+  bool commitStatus = 2;
+}
+
+message UpdateBookRequest {
+  Book book = 1;
+  bool commitStatus = 2;
 }
 
 message Empty {}
@@ -32,10 +38,18 @@ message Tail2HeadResponse {
   bool success = 1;
 }
 
+message VoteCommitRequest {}
+
+message VoteCommitResponse {
+  bool success = 1;
+}
+
+
 service BookDatabaseService {
   rpc AddBook(Book) returns (Head2TailResponse);
   rpc GetBook(GetBookRequest) returns (Book);
-  rpc UpdateBook(Book) returns (Head2TailResponse);
+  rpc UpdateBook(UpdateBookRequest) returns (Head2TailResponse);
   rpc Head2Tail(Book) returns (Head2TailResponse);
   rpc Tail2Head(Book) returns (Tail2HeadResponse);
+  rpc SendVoteToCoordinator(VoteCommitRequest) returns (VoteCommitResponse);
 }

@@ -6,10 +6,20 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class GetBookRequest(_message.Message):
-    __slots__ = ("request_id",)
+    __slots__ = ("request_id", "commitStatus")
     REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    COMMITSTATUS_FIELD_NUMBER: _ClassVar[int]
     request_id: str
-    def __init__(self, request_id: _Optional[str] = ...) -> None: ...
+    commitStatus: bool
+    def __init__(self, request_id: _Optional[str] = ..., commitStatus: bool = ...) -> None: ...
+
+class UpdateBookRequest(_message.Message):
+    __slots__ = ("book", "commitStatus")
+    BOOK_FIELD_NUMBER: _ClassVar[int]
+    COMMITSTATUS_FIELD_NUMBER: _ClassVar[int]
+    book: Book
+    commitStatus: bool
+    def __init__(self, book: _Optional[_Union[Book, _Mapping]] = ..., commitStatus: bool = ...) -> None: ...
 
 class Empty(_message.Message):
     __slots__ = ()
@@ -50,6 +60,16 @@ class Head2TailResponse(_message.Message):
     def __init__(self, success: bool = ...) -> None: ...
 
 class Tail2HeadResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
+
+class VoteCommitRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class VoteCommitResponse(_message.Message):
     __slots__ = ("success",)
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     success: bool
