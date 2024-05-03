@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package payment_executor;
+
+message PaymentExecutionRequest {}
+
+message PaymentExecutionResponse {
+  bool success = 1;
+}
+
+message VoteCommitRequest {}
+
+message VoteCommitResponse {
+  bool success = 1;
+}
+
+service PaymentExecutorService {
+  rpc ExecutePayment(PaymentExecutionRequest) returns (PaymentExecutionResponse);
+  rpc SendVoteToCoordinator(VoteCommitRequest) returns (VoteCommitResponse);
+}

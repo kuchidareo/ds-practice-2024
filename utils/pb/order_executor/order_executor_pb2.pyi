@@ -16,6 +16,16 @@ class TokenResponse(_message.Message):
     success: bool
     def __init__(self, success: bool = ...) -> None: ...
 
+class VoteRequest(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class VoteResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
+
 class HealthCheckRequest(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

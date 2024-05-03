@@ -10,6 +10,13 @@ message TokenResponse {
   bool success = 1;
 }
 
+
+message VoteRequest {}
+
+message VoteResponse {
+  bool success = 1;
+}
+
 message HealthCheckRequest {}
 
 message HealthCheckResponse {
@@ -19,5 +26,6 @@ message HealthCheckResponse {
 service OrderExecutorService {
   rpc PassToken(Token) returns (TokenResponse);
   rpc CheckHealth(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc SendVoteToParticipants(VoteRequest) returns (VoteResponse);
 }
 

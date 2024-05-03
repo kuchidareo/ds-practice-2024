@@ -24,6 +24,11 @@ class OrderExecutorServiceStub(object):
                 request_serializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckRequest.SerializeToString,
                 response_deserializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckResponse.FromString,
                 )
+        self.SendVoteToParticipants = channel.unary_unary(
+                '/order_executor.OrderExecutorService/SendVoteToParticipants',
+                request_serializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteRequest.SerializeToString,
+                response_deserializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteResponse.FromString,
+                )
 
 
 class OrderExecutorServiceServicer(object):
@@ -41,6 +46,12 @@ class OrderExecutorServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SendVoteToParticipants(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_OrderExecutorServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +64,11 @@ def add_OrderExecutorServiceServicer_to_server(servicer, server):
                     servicer.CheckHealth,
                     request_deserializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckRequest.FromString,
                     response_serializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckResponse.SerializeToString,
+            ),
+            'SendVoteToParticipants': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendVoteToParticipants,
+                    request_deserializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteRequest.FromString,
+                    response_serializer=utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +111,22 @@ class OrderExecutorService(object):
         return grpc.experimental.unary_unary(request, target, '/order_executor.OrderExecutorService/CheckHealth',
             utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckRequest.SerializeToString,
             utils_dot_pb_dot_order__executor_dot_order__executor__pb2.HealthCheckResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendVoteToParticipants(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/order_executor.OrderExecutorService/SendVoteToParticipants',
+            utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteRequest.SerializeToString,
+            utils_dot_pb_dot_order__executor_dot_order__executor__pb2.VoteResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
