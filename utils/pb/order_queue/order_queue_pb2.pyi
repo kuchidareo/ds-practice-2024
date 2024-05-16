@@ -13,13 +13,35 @@ class User(_message.Message):
     contact: str
     def __init__(self, name: _Optional[str] = ..., contact: _Optional[str] = ...) -> None: ...
 
+class Book(_message.Message):
+    __slots__ = ("id", "title", "author", "description", "copies", "copiesAvailable", "category", "img", "price")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    AUTHOR_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    COPIES_FIELD_NUMBER: _ClassVar[int]
+    COPIESAVAILABLE_FIELD_NUMBER: _ClassVar[int]
+    CATEGORY_FIELD_NUMBER: _ClassVar[int]
+    IMG_FIELD_NUMBER: _ClassVar[int]
+    PRICE_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    title: str
+    author: str
+    description: str
+    copies: int
+    copiesAvailable: int
+    category: str
+    img: str
+    price: float
+    def __init__(self, id: _Optional[str] = ..., title: _Optional[str] = ..., author: _Optional[str] = ..., description: _Optional[str] = ..., copies: _Optional[int] = ..., copiesAvailable: _Optional[int] = ..., category: _Optional[str] = ..., img: _Optional[str] = ..., price: _Optional[float] = ...) -> None: ...
+
 class Item(_message.Message):
-    __slots__ = ("name", "quantity")
-    NAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("book", "quantity")
+    BOOK_FIELD_NUMBER: _ClassVar[int]
     QUANTITY_FIELD_NUMBER: _ClassVar[int]
-    name: str
+    book: Book
     quantity: int
-    def __init__(self, name: _Optional[str] = ..., quantity: _Optional[int] = ...) -> None: ...
+    def __init__(self, book: _Optional[_Union[Book, _Mapping]] = ..., quantity: _Optional[int] = ...) -> None: ...
 
 class CreditCard(_message.Message):
     __slots__ = ("number", "expirationDate", "cvv")

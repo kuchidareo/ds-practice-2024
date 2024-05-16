@@ -2,6 +2,7 @@ import sys
 import os
 import uuid
 from datetime import datetime
+from google.protobuf.json_format import MessageToDict
 
 # This set of lines are needed to import the gRPC stubs.
 # The path of the stubs is relative to the current file, or absolute inside the container.
@@ -98,6 +99,13 @@ def item_and_userdata_verification_service(data, order_id, vector_clock):
         ))
         return response
 
+# Our book database is key-value structure. The key is bookId. 
+def lookup_book_from_title(title):
+    with grpc.insecure_channel("book_database_1:50056") as channel:
+        stub = book_database_grpc.BookDatabaseServiceStub(channel)
+        book = stub.GetBookFromTitle(book_database.GetBookFromTitleRequest(title=title))
+    return book
+
 def transform_suggested_book_response(suggested_books):
     book_array = []
     for book in suggested_books:
@@ -120,14 +128,20 @@ def increment_vector_clock(vector_clock):
     return {"vcArray": vc_array, "timestamp": timestamp}
 
 def enqueue_order_service(data, order_id):
-    with grpc.insecure_channel('order_queue:50054') as channel:
+    items = []
+    for item in data['items']:
+        book = lookup_book_from_title(item['name'])
+        book = MessageToDict(book)
+        items.append(order_queue.Item(book=order_queue.Book(**book), quantity=item['quantity']))
+
+    with grpc.insecure_channel('order_queue:5w0054') as channel:
         stub = order_queue_grpc.OrderQueueServiceStub(channel)
         
         # Create an order object.
         order = order_queue.Order(
             orderId=order_id,
             user=data['user'],
-            items=data['items'],
+            items=items,
             creditCard=data['creditCard'],
             address = data['billingAddress'],
             priority= data['items'][0]['quantity'] + (1 if data['billingAddress']['country'] == 'Finlad' else 0) + (len(data['creditCard']['number']) - 10)

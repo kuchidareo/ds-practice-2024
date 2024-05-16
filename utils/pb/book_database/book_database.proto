@@ -40,10 +40,14 @@ message VoteCommitResponse {
   bool success = 1;
 }
 
+message GetBookFromTitleRequest {
+  string title = 1;
+}
 
 service BookDatabaseService {
   rpc AddBook(Book) returns (Head2TailResponse);
   rpc GetBook(GetBookRequest) returns (Book);
+  rpc GetBookFromTitle(GetBookFromTitleRequest) returns (Book);
   rpc UpdateBook(UpdateBookRequest) returns (Head2TailResponse);
   rpc Head2Tail(Book) returns (Head2TailResponse);
   rpc SendVoteToCoordinator(VoteCommitRequest) returns (VoteCommitResponse);

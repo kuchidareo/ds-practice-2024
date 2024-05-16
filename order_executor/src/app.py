@@ -54,6 +54,40 @@ def send_vote_request_to_book_database():
         response = stub.SendVoteToCoordinator(book_database.VoteCommitRequest())
         return response.success
     
+def send_execute_request_to_payment_executor(global_commit):
+    with grpc.insecure_channel('payment_executor:50059') as channel:
+        stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
+        response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
+        return response.success
+    
+def send_execute_request_to_book_database(global_commit, order):
+    item = order.items[0] # There is only 1 item.
+
+    print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')
+    with grpc.insecure_channel('book_database_1:50056') as channel:
+        stub = book_database_grpc.BookDatabaseServiceStub(channel)
+        book = stub.GetBook(book_database.GetBookRequest(
+            request_id=item.book.id, # Learning Python (String)
+            commitStatus=global_commit
+        ), global_commit)
+
+    if book and book.copiesAvailable > item.quantity:
+        book.copiesAvailable -= item.quantity
+        # Change the available counts.
+        print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+item.quantity} to {book.copiesAvailable}')
+    else:
+        return False
+    
+    print(f'[Order Executor] Send request of updating the book data.') 
+    with grpc.insecure_channel('book_database_1:50056') as channel:
+        stub = book_database_grpc.BookDatabaseServiceStub(channel)
+        response = stub.UpdateBook(book_database.UpdateBookRequest(
+            book=book, 
+            commitStatus=global_commit)
+        )
+        return response.success
+
+
 class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     def __init__(self):
         self.is_busy = False
@@ -97,42 +131,18 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
         global_commit = self.SendVoteRequestToParticipants()
         print(f"global_commit ={type(global_commit)}= {global_commit}")
 
-        with grpc.insecure_channel('payment_executor:50059') as channel:
-            stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
-            print(f"stub  ={type(stub )}= {stub }")
-            response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
-            if response.success:
-                print(f"Payment execution was a success")
-        
-        # Get the book data,
-        print(f'[Order Executor] Send request of getting the book data. requesting book_id is 1')
-        with grpc.insecure_channel('book_database_1:50056') as channel:
-            stub = book_database_grpc.BookDatabaseServiceStub(channel)
-            book = stub.GetBook(book_database.GetBookRequest(
-                request_id="1", # Learning Python
-                commitStatus=global_commit
-            ), global_commit)
 
-        # Change the available counts.
-        book.copiesAvailable -= 1
-        print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+1} to {book.copiesAvailable}')
-        print(f'[Order Executor] Send request of updating the book data.')
-        with grpc.insecure_channel('book_database_1:50056') as channel:
-            stub = book_database_grpc.BookDatabaseServiceStub(channel)
-            response = stub.UpdateBook(book_database.UpdateBookRequest(
-                book=book, 
-                commitStatus=global_commit))
-        if response.success:
-            print(f'[Order Executor] Confirmed the update is success.')
-            print(f'[Order Executor] Reaccess to the book database.')
+        payment_executor_future = send_execute_request_to_payment_executor(global_commit)
+        if payment_executor_future:
+            print(f"[Order Executor] Payment execution was a success")
+        else:
+            print(f"[Order Executor] Payment execution was a failed.")
 
-            with grpc.insecure_channel('book_database_1:50056') as channel:
-                stub = book_database_grpc.BookDatabaseServiceStub(channel)
-                book = stub.GetBook(book_database.GetBookRequest(
-                    request_id="1", # Learning Python
-                    commitStatus=global_commit
-                ))
-            print(f'[Order Executor] Reaccessed book data {book}')
+        book_database_executor_future = send_execute_request_to_book_database(global_commit, order)
+        if book_database_executor_future:
+            print(f'[Order Executor] Book database update is success.')
+        else:
+            print(f'[Order Executor] Book database update is failed.')
 
         print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order

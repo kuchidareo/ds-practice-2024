@@ -68,3 +68,9 @@ class VoteCommitResponse(_message.Message):
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     success: bool
     def __init__(self, success: bool = ...) -> None: ...
+
+class GetBookFromTitleRequest(_message.Message):
+    __slots__ = ("title",)
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    title: str
+    def __init__(self, title: _Optional[str] = ...) -> None: ...
