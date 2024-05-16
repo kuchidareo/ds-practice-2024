@@ -21,11 +21,13 @@ total_nodes = int(os.getenv('TOTAL_REPLICAS', '3'))
 class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
     def __init__(self):
         self.books = {}
+        self.title_to_book = {}
         with open(os.path.abspath(os.path.join(FILE, '../book_list.json'))) as f:
             book_list_json = json.load(f)
             for _, value in book_list_json.items():
                 book = book_database.Book(**value)
                 self.books[book.id] = book
+                self.title_to_book[book.title] = book
 
     def AddBook(self, request, context):
         with grpc.insecure_channel("book_database_1:50056") as channel:
@@ -61,7 +63,18 @@ class BookDatabaseService(book_database_grpc.BookDatabaseServiceServicer):
             print("Phase 2b - Database Service: GLOBAL ABORT received from cordinator")
             print("Nothing executed in database")
             return False
-    
+        
+    def GetBookFromTitle(self, request, context):
+        if bd_node_id == 3:
+            print(f'[Node id {bd_node_id}]: Get book data {self.title_to_book[request.title]}')
+            return self.title_to_book[request.title]
+        else:
+            print(f'[Node id {bd_node_id}] Redirect to the Tail server (current node id {bd_node_id}).')
+            with grpc.insecure_channel("book_database_3:50056") as channel:
+                stub = book_database_grpc.BookDatabaseServiceStub(channel)
+                response = stub.GetBookFromTitle(request)
+            return response
+        
     def Head2Tail(self, request, context):
         if bd_node_id < total_nodes:
             next_bd_node_id = bd_node_id + 1

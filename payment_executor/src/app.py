@@ -19,13 +19,14 @@ from concurrent import futures
 
 class PaymentExecutorService(payment_executor_grpc.PaymentExecutorServiceServicer):
     def ExecutePayment(self, request, context):
-        response = False
         if request.commitStatus: 
             print("Phase 2b - Payment Executor: GLOBAL COMMIT received from cordinator")
             print("Payment execution is being processed")
+            response = True
         else:
             print("Phase 2b - Payment Executor: GLOBAL ABORT received from cordinator")
             print("Payment execution is being aborted")
+            response = False
         return payment_executor.PaymentExecutionResponse(success=response)
 
     def SendVoteToCoordinator(self, request, context): 
