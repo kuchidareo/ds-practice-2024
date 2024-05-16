@@ -134,7 +134,7 @@ def enqueue_order_service(data, order_id):
         book = MessageToDict(book)
         items.append(order_queue.Item(book=order_queue.Book(**book), quantity=item['quantity']))
 
-    with grpc.insecure_channel('order_queue:5w0054') as channel:
+    with grpc.insecure_channel('order_queue:50054') as channel:
         stub = order_queue_grpc.OrderQueueServiceStub(channel)
         
         # Create an order object.
