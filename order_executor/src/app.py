@@ -60,9 +60,7 @@ def send_execute_request_to_payment_executor(global_commit):
         response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
         return response.success
     
-def send_execute_request_to_book_database(global_commit, order):
-    item = order.items[0] # There is only 1 item.
-
+def send_execute_request_to_book_database(global_commit, item):
     print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')
     with grpc.insecure_channel('book_database_1:50056') as channel:
         stub = book_database_grpc.BookDatabaseServiceStub(channel)
@@ -138,11 +136,19 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
         else:
             print(f"[Order Executor] Payment execution was a failed.")
 
-        book_database_executor_future = send_execute_request_to_book_database(global_commit, order)
-        if book_database_executor_future:
-            print(f'[Order Executor] Book database update is success.')
-        else:
-            print(f'[Order Executor] Book database update is failed.')
+        with futures.ThreadPoolExecutor() as executor:
+            futures_list = []
+            for item in order.items:
+                future = executor.submit(send_execute_request_to_book_database, global_commit, item)
+                futures_list.append(future)
+
+            futures.wait(futures_list, return_when=futures.ALL_COMPLETED)
+            # Check all future results for True
+            all_success = all(future.result() for future in futures_list)
+            if all_success:
+                print('[Order Executor] All book database updates are successful.')
+            else:
+                print('[Order Executor] Some book database updates failed.')
 
         print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order
