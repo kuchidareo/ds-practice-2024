@@ -66,8 +66,8 @@ class Order(_message.Message):
     items: _containers.RepeatedCompositeFieldContainer[Item]
     creditCard: CreditCard
     address: BillingAddress
-    priority: int
-    def __init__(self, orderId: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ..., items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., creditCard: _Optional[_Union[CreditCard, _Mapping]] = ..., address: _Optional[_Union[BillingAddress, _Mapping]] = ..., priority: _Optional[int] = ...) -> None: ...
+    priority: float
+    def __init__(self, orderId: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ..., items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., creditCard: _Optional[_Union[CreditCard, _Mapping]] = ..., address: _Optional[_Union[BillingAddress, _Mapping]] = ..., priority: _Optional[float] = ...) -> None: ...
 
 class BillingAddress(_message.Message):
     __slots__ = ("street", "city", "state", "zip", "country")

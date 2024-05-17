@@ -36,7 +36,7 @@ message Order {
   repeated Item items = 3;
   CreditCard creditCard = 4;
   BillingAddress address = 5;
-  int32 priority = 6;
+  float priority = 6;
 }
 
 message BillingAddress {

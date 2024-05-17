@@ -1,6 +1,7 @@
 import sys
 import os
 import uuid
+import random
 from datetime import datetime
 from google.protobuf.json_format import MessageToDict
 
@@ -138,13 +139,17 @@ def enqueue_order_service(data, order_id):
         stub = order_queue_grpc.OrderQueueServiceStub(channel)
         
         # Create an order object.
+        # Priority number must be different. If it's same, TypeError: '<' not supported between instances of 'Order' and 'Order' occurred.
         order = order_queue.Order(
             orderId=order_id,
             user=data['user'],
             items=items,
             creditCard=data['creditCard'],
             address = data['billingAddress'],
-            priority= data['items'][0]['quantity'] + (1 if data['billingAddress']['country'] == 'Finlad' else 0) + (len(data['creditCard']['number']) - 10)
+            priority= data['items'][0]['quantity'] \
+                + (1 if data['billingAddress']['country'] == 'Finlad' else 0) \
+                + (len(data['creditCard']['number']) - 10) \
+                + (random.uniform(0.0, 1.0))
         )
         
         enqueue_response = stub.Enqueue(order_queue.EnqueueRequest(order=order))
