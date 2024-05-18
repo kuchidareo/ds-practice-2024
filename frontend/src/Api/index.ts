@@ -38,8 +38,8 @@ export const responseData = {
         "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
         "author": "Erich Gamma, Richard Helm, Ralph Johnson, & John Vlissides",
         "description": "Useminal book on Design Patterns.",
-        "copies": 15,
-        "copiesAvailable": 15,
+        "copies": 1,
+        "copiesAvailable": 1,
         "category": "Software Development",
         "img": "https://prodimage.images-bn.com/lf?set=key%5Bresolve.pixelRatio%5D,value%5B1%5D&set=key%5Bresolve.width%5D,value%5B600%5D&set=key%5Bresolve.height%5D,value%5B10000%5D&set=key%5Bresolve.imageFit%5D,value%5Bcontainerwidth%5D&set=key%5Bresolve.allowImageUpscaling%5D,value%5B0%5D&set=key%5Bresolve.format%5D,value%5Bwebp%5D&source=url%5Bhttps://prodimage.images-bn.com/pimages/9780201633610_p0_v5_s600x595.jpg%5D&scale=options%5Blimit%5D,size%5B600x10000%5D&sink=format%5Bwebp%5D",
         price: 3
