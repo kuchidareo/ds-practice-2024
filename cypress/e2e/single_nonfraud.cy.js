@@ -4,7 +4,7 @@ describe('Single Order Test', () => {
     cy.get('.btn').click()
 
     // User Information
-    cy.get('#name').type('My name')
+    cy.get('#name').type('[Case1] Single Nofraud')
     cy.get('#contact').type('123123123')
     // Billing Address
     cy.get('#street').type('My Street')

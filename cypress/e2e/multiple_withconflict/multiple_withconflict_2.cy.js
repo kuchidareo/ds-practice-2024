@@ -4,7 +4,7 @@ describe('Multiple With Conflict Order Test 2', () => {
     cy.get('.btn').click()
 
     // User Information
-    cy.get('#name').type('My name 2')
+    cy.get('#name').type('[Case4] With Conflict 2')
     cy.get('#contact').type('123123123')
     // Billing Address
     cy.get('#street').type('My Street')

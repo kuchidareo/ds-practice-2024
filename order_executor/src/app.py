@@ -149,6 +149,8 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
         if payment_success and database_all_success:
             print("[Order Executor] Payment execution is successful")
             print('[Order Executor] All book database updates are successful.')
+            for item in order.items:
+                print(f'[Order Executor] Execution success. user name: {order.user.name}, ordered book: {item.book.title}, quantity: {item.quantity}')
         else:
             if not payment_success:
                 print("[Order Executor] Payment executes failed.")

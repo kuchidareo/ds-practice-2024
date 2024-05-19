@@ -5,7 +5,7 @@ describe('Multiple Nofraud Noconflict Order Test 2', () => {
     cy.get('.btn').click()
 
     // User Information
-    cy.get('#name').type('My name')
+    cy.get('#name').type('[Case2] Nofraud Noconflict 2')
     cy.get('#contact').type('123123123')
     // Billing Address
     cy.get('#street').type('My Street')
