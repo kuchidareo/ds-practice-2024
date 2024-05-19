@@ -77,6 +77,7 @@ def send_execute_request_to_book_database(global_commit, item):
         # Change the available counts.
         print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+item.quantity} to {book.copiesAvailable}')
     else:
+        print(f'[Order Executor] BookId: {book.id} copiedAvailable is less than ordering quantity.')
         return False
     
     print(f'[Order Executor] Send request of updating the book data.') 
@@ -154,6 +155,8 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
                 print("[Order Executor] Payment executes failed.")
             if not database_all_success:
                 print('[Order Executor] Some book database updates failed.')
+            print(f'[Order Executor] Execution failed, even though we showed the order-successful confirmation page. \
+                   Send mail or call to the user contact: {order.user.contact} user name: {order.user.name}')
                 
 
         print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
