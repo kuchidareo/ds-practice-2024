@@ -61,7 +61,7 @@ def send_execute_request_to_payment_executor(global_commit):
         return response.success
     
 def send_execute_request_to_book_database(global_commit, item):
-    delaytime = {"1": 30, "2": 20, "3": 40, "4": 45, "5": 25}
+    delaytime = {"1": 0, "2": 20, "3": 20, "4": 20, "5": 20, "6": 20}
     print(f'[Orcer Executor] Book Id is {item.book.id}. Add a delay time {delaytime[item.book.id]}')
     time.sleep(delaytime[item.book.id])
     print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')

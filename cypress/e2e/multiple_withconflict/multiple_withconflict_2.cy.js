@@ -1,11 +1,11 @@
-describe('Multiple With Fraud Noconflict Order Test 2', () => {
-  it('places a with-fraudulent order', () => {
-    cy.visit('localhost:8080/books/3')
+describe('Multiple With Conflict Order Test 2', () => {
+  it('places a non-fraudulent order successfully', () => {
+    cy.visit('localhost:8080/books/6')
     cy.get('.btn').click()
 
     // User Information
     cy.get('#name').type('My name')
-    // cy.get('#contact').type('123123123')
+    cy.get('#contact').type('123123123')
     // Billing Address
     cy.get('#street').type('My Street')
     cy.get('#city').type('My City')
@@ -13,7 +13,7 @@ describe('Multiple With Fraud Noconflict Order Test 2', () => {
     cy.get('#zip').type('12345')
     cy.get('#country').select('Estonia')
     // Payment Details
-    cy.get('#creditCardNumbe').type('--------')
+    cy.get('#creditCardNumbe').type('2341234123412341')
     cy.get('#creditCardExpirationDate').type('12/25')
     cy.get('#creditCardCVV').type('123')
     // Additional Information
@@ -23,6 +23,5 @@ describe('Multiple With Fraud Noconflict Order Test 2', () => {
     // Submit the form
     cy.get('form').submit()
     cy.url().should('include', '/confirmation')
-    cy.get('#root > div > div.flex-grow-1 > div > h2').should('contain.text', '404')
   })
 })
