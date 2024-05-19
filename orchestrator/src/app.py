@@ -128,13 +128,15 @@ def increment_vector_clock(vector_clock):
 
     return {"vcArray": vc_array, "timestamp": timestamp}
 
-def enqueue_order_service(data, order_id):
-    items = []
-    for item in data['items']:
-        book = lookup_book_from_title(item['name'])
-        book = MessageToDict(book)
-        items.append(order_queue.Item(book=order_queue.Book(**book), quantity=item['quantity']))
+def confirm_bookcopies_available(book_orders):
+    for item in book_orders:
+        available = item.book.copiesAvailable
+        ordering = item.quantity
+        if ordering > available:
+            return False
+    return True
 
+def enqueue_order_service(data, book_orders, order_id):
     with grpc.insecure_channel('order_queue:50054') as channel:
         stub = order_queue_grpc.OrderQueueServiceStub(channel)
         
@@ -143,7 +145,7 @@ def enqueue_order_service(data, order_id):
         order = order_queue.Order(
             orderId=order_id,
             user=data['user'],
-            items=items,
+            items=book_orders,
             creditCard=data['creditCard'],
             address = data['billingAddress'],
             priority= data['items'][0]['quantity'] \
@@ -184,7 +186,18 @@ def checkout():
     if not (orderid_storage_fraud_future.result() and orderid_storage_transaction_future.result() and orderid_storage_suggestion_future.result()):
         order_status_response = {'orderId': '404', "status": "Server Error. Please try later."}
         return order_status_response
+    
+    book_orders = []
+    for item in data['items']:
+        book = lookup_book_from_title(item['name'])
+        book = MessageToDict(book)
+        book_orders.append(order_queue.Item(book=order_queue.Book(**book), quantity=item['quantity']))
+    
+    is_books_available = confirm_bookcopies_available(book_orders)
 
+    if not is_books_available:
+        order_status_response = {'orderId': '404', "status": "Some of the cheking out books are sold out. Please try again."}
+        return order_status_response
 
     # Triger the flow of events and recieve the end result.
     with futures.ThreadPoolExecutor() as executor:
@@ -194,7 +207,7 @@ def checkout():
     
     if checkout_result.isValid:
         # Enqueue the order here
-        enqueue_response = enqueue_order_service(data, order_id)
+        enqueue_response = enqueue_order_service(data, book_orders, order_id)
         if not enqueue_response.success:
             return {"status": "Failed to enqueue the order."}
 
@@ -209,8 +222,6 @@ def checkout():
         print(checkout_result.errorMessage)
         order_status_response = {'orderId': '404', "status": checkout_result.errorMessage}
         return order_status_response
-
-    
 
 
 if __name__ == '__main__':

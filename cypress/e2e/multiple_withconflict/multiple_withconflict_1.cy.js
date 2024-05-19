@@ -1,11 +1,10 @@
-
-describe('Multiple Nofraud Noconflict Order Test 1', () => {
+describe('Multiple With Conflict Order Test 1', () => {
   it('places a non-fraudulent order successfully', () => {
-    cy.visit('localhost:8080/books/2')
+    cy.visit('localhost:8080/books/6')
     cy.get('.btn').click()
 
     // User Information
-    cy.get('#name').type('My name')
+    cy.get('#name').type('My name 1')
     cy.get('#contact').type('123123123')
     // Billing Address
     cy.get('#street').type('My Street')

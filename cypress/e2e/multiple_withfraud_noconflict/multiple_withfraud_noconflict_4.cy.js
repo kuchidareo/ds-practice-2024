@@ -1,7 +1,6 @@
-
-describe('Multiple Nofraud Noconflict Order Test 1', () => {
-  it('places a non-fraudulent order successfully', () => {
-    cy.visit('localhost:8080/books/2')
+describe('Multiple With Fraud Noconflict Order Test 4', () => {
+  it('places a fraudulent order', () => {
+    cy.visit('localhost:8080/books/5')
     cy.get('.btn').click()
 
     // User Information
@@ -14,8 +13,8 @@ describe('Multiple Nofraud Noconflict Order Test 1', () => {
     cy.get('#zip').type('12345')
     cy.get('#country').select('Estonia')
     // Payment Details
-    cy.get('#creditCardNumbe').type('1234123412341234')
-    cy.get('#creditCardExpirationDate').type('12/25')
+    cy.get('#creditCardNumbe').type('3412341234123412')
+    cy.get('#creditCardExpirationDate').type('12/20')
     cy.get('#creditCardCVV').type('123')
     // Additional Information
     cy.get('#shippingMethod').type('by ship')
@@ -24,5 +23,6 @@ describe('Multiple Nofraud Noconflict Order Test 1', () => {
     // Submit the form
     cy.get('form').submit()
     cy.url().should('include', '/confirmation')
+    cy.get('#root > div > div.flex-grow-1 > div > h2').should('contain.text', '404')
   })
 })

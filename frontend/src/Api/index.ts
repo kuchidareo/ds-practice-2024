@@ -38,10 +38,32 @@ export const responseData = {
         "title": "Design Patterns: Elements of Reusable Object-Oriented Software",
         "author": "Erich Gamma, Richard Helm, Ralph Johnson, & John Vlissides",
         "description": "Useminal book on Design Patterns.",
-        "copies": 15,
-        "copiesAvailable": 15,
+        "copies": 10,
+        "copiesAvailable": 10,
         "category": "Software Development",
         "img": "https://prodimage.images-bn.com/lf?set=key%5Bresolve.pixelRatio%5D,value%5B1%5D&set=key%5Bresolve.width%5D,value%5B600%5D&set=key%5Bresolve.height%5D,value%5B10000%5D&set=key%5Bresolve.imageFit%5D,value%5Bcontainerwidth%5D&set=key%5Bresolve.allowImageUpscaling%5D,value%5B0%5D&set=key%5Bresolve.format%5D,value%5Bwebp%5D&source=url%5Bhttps://prodimage.images-bn.com/pimages/9780201633610_p0_v5_s600x595.jpg%5D&scale=options%5Blimit%5D,size%5B600x10000%5D&sink=format%5Bwebp%5D",
         price: 3
+    },
+    "book5": {
+        "id": "5",
+        "title": "THE NEW YORKER",
+        "author": "The New Yorker",
+        "description": "description",
+        "copies": 10,
+        "copiesAvailable": 10,
+        "category": "magazine",
+        "img": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Original_New_Yorker_cover.png",
+        price: 8.99
+    },
+    "book6": {
+        "id": "6",
+        "title": "ESTONIA - A MODERN HISTORY",
+        "author": "NEIL TAYLOR",
+        "description": "description",
+        "copies": 1,
+        "copiesAvailable": 1,
+        "category": "history",
+        "img": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1526892615i/40186083.jpg",
+        price: 23.5
     }
 };

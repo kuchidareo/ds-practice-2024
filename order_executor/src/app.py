@@ -61,6 +61,9 @@ def send_execute_request_to_payment_executor(global_commit):
         return response.success
     
 def send_execute_request_to_book_database(global_commit, item):
+    delaytime = {"1": 0, "2": 20, "3": 20, "4": 20, "5": 20, "6": 20}
+    print(f'[Orcer Executor] Book Id is {item.book.id}. Add a delay time {delaytime[item.book.id]}')
+    time.sleep(delaytime[item.book.id])
     print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')
     with grpc.insecure_channel('book_database_1:50056') as channel:
         stub = book_database_grpc.BookDatabaseServiceStub(channel)
@@ -69,11 +72,12 @@ def send_execute_request_to_book_database(global_commit, item):
             commitStatus=global_commit
         ), global_commit)
 
-    if book and book.copiesAvailable > item.quantity:
+    if book and book.copiesAvailable >= item.quantity:
         book.copiesAvailable -= item.quantity
         # Change the available counts.
         print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+item.quantity} to {book.copiesAvailable}')
     else:
+        print(f'[Order Executor] BookId: {book.id} copiedAvailable is less than ordering quantity.')
         return False
     
     print(f'[Order Executor] Send request of updating the book data.') 
@@ -84,8 +88,7 @@ def send_execute_request_to_book_database(global_commit, item):
             commitStatus=global_commit)
         )
         return response.success
-
-
+    
 class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     def __init__(self):
         self.is_busy = False
@@ -129,26 +132,30 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
         global_commit = self.SendVoteRequestToParticipants()
         print(f"global_commit ={type(global_commit)}= {global_commit}")
 
-
-        payment_executor_future = send_execute_request_to_payment_executor(global_commit)
-        if payment_executor_future:
-            print(f"[Order Executor] Payment execution was a success")
-        else:
-            print(f"[Order Executor] Payment execution was a failed.")
-
         with futures.ThreadPoolExecutor() as executor:
-            futures_list = []
+            payment_future = executor.submit(send_execute_request_to_payment_executor, global_commit)
+        
+            database_futures_list = []
             for item in order.items:
                 future = executor.submit(send_execute_request_to_book_database, global_commit, item)
-                futures_list.append(future)
+                database_futures_list.append(future)
 
-            futures.wait(futures_list, return_when=futures.ALL_COMPLETED)
-            # Check all future results for True
-            all_success = all(future.result() for future in futures_list)
-            if all_success:
-                print('[Order Executor] All book database updates are successful.')
-            else:
+            futures.wait([payment_future] + database_futures_list, return_when=futures.ALL_COMPLETED)
+            
+        # Check all future results for True
+        payment_success = payment_future.result()
+        database_all_success = all(future.result() for future in database_futures_list)
+
+        if payment_success and database_all_success:
+            print("[Order Executor] Payment execution is successful")
+            print('[Order Executor] All book database updates are successful.')
+        else:
+            if not payment_success:
+                print("[Order Executor] Payment executes failed.")
+            if not database_all_success:
                 print('[Order Executor] Some book database updates failed.')
+            print(f'[Order Executor] Execution failed, even though we showed the order-successful confirmation page. \
+                Send mail or call to the user contact: {order.user.contact} user name: {order.user.name}')   
 
         print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
         time.sleep(30)  # Simulate time taken to process the order

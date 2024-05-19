@@ -1,6 +1,6 @@
-describe('Multiple Order Test 3', () => {
+describe('Multiple Nofraud Noconflict Order Test 3', () => {
   it('places a non-fraudulent order successfully', () => {
-    cy.visit('localhost:8080/books/3')
+    cy.visit('localhost:8080/books/')
     cy.get('.btn').click()
 
     // User Information
