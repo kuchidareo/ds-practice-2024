@@ -44,3 +44,30 @@ frontend service:
 - node.js, npm (or any other package manager)
 
 And then run each service individually.
+
+### Cypress end-to-end testing
+Dependencies
+- npm 10.8.0
+- nvm 0.39.5
+- cypress 13.9.0
+
+Install Cypress by
+```bash
+npm install cypress --save-dev
+```
+
+Testing codes are in `cypress/e2e`.
+
+We can specify the test codes by adding `--spec` attribute.
+```bash
+npx cypress run --spec "cypress/e2e/single_nonfraud.cy.js"
+```
+
+#### Cypress Cloud 
+When we set the `--record` and `--key` attributes, the testing results will be recorded to Cypress Cloud.
+
+```bash
+npx cypress run --record --key <CYPRESS_KEY> --spec "cypress/e2e/single_nonfraud.cy.js"
+```
+
+We can find <CYPRESS_KEY> in Cypress Cloud `Project Settings -> Record Keys`
