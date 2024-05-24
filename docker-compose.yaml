@@ -339,3 +339,11 @@ services:
       - ./utils:/app/utils
       # Mount the payment_executor/src directory in the current directory to the /app/payment_executor/src directory in the container
       - ./payment_executor/src:/app/payment_executor/src
+  observability:
+    image: grafana/otel-lgtm
+    ports:
+      - "3000:3000"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - OTEL_METRIC_EXPORT_INTERVAL=1000

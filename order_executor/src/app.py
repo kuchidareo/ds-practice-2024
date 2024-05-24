@@ -4,6 +4,37 @@ from datetime import datetime
 import queue
 import time
 
+from opentelemetry import trace, metrics
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.metrics import MeterProvider, Counter, UpDownCounter, Histogram
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.sdk.resources import Resource
+
+trace.set_tracer_provider(TracerProvider(resource=Resource.create({"service.name": "order_executor"})))
+tracer = trace.get_tracer(__name__)
+span_processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://observability:4318/v1/traces"))
+trace.get_tracer_provider().add_span_processor(span_processor)
+
+metrics.set_meter_provider(MeterProvider(resource=Resource.create({"service.name": "order_executor"})))
+meter = metrics.get_meter(__name__)
+metric_exporter = OTLPMetricExporter(endpoint="http://observability:4318/v1/metrics")
+
+order_counter = meter.create_counter("order_count", description="Counts processed orders")
+order_status = meter.create_up_down_counter("order_status", description="Counts active orders")
+request_latency = meter.create_histogram("request_latency", description="Request latency")
+
+
+active_orders_count = 0
+
+def get_active_orders():
+    global active_orders_count
+    return active_orders_count
+
+active_orders = meter.create_observable_gauge("active_orders", callbacks=[get_active_orders])
+
+
 # This set of lines are needed to import the gRPC stubs.
 # The path of the stubs is relative to the current file, or absolute inside the container.
 # Change these lines only if strictly needed.
@@ -33,61 +64,69 @@ total_replicas = int(os.getenv('TOTAL_REPLICAS', '6'))
 
 def dequeue():
     # Access the order queue to dequeue.
-    with grpc.insecure_channel('order_queue:50054') as channel:
-            print(f"Replica {replica_id} has accessed the queue")
-            stub = order_queue_grpc.OrderQueueServiceStub(channel)
-            response = stub.Dequeue(order_queue.DequeueRequest())
+    with tracer.start_as_current_span("dequeue_order") as span:
+        span.set_attribute("replica_id", replica_id)
+        with grpc.insecure_channel('order_queue:50054') as channel:
+                print(f"Replica {replica_id} has accessed the queue")
+                stub = order_queue_grpc.OrderQueueServiceStub(channel)
+                response = stub.Dequeue(order_queue.DequeueRequest())
 
-    return response
+        return response
 
 def send_vote_request_to_payment_executor():
-    print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Payment Executor.")
-    with grpc.insecure_channel('payment_executor:50059') as channel:
-        stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
-        response = stub.SendVoteToCoordinator(payment_executor.VoteCommitRequest())
-        return response.success
+    with tracer.start_as_current_span("vote_request_payment_executor") as span:
+        print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Payment Executor.")
+        with grpc.insecure_channel('payment_executor:50059') as channel:
+            stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
+            response = stub.SendVoteToCoordinator(payment_executor.VoteCommitRequest())
+            return response.success
     
 def send_vote_request_to_book_database():
-    print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Book Database.")
-    with grpc.insecure_channel('book_database_1:50056') as channel:
-        stub = book_database_grpc.BookDatabaseServiceStub(channel)
-        response = stub.SendVoteToCoordinator(book_database.VoteCommitRequest())
-        return response.success
+    with tracer.start_as_current_span("vote_request_book_database") as span:
+        print(f"Order Executor-{replica_id}: Phase 1a - Sending vote request to Book Database.")
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            response = stub.SendVoteToCoordinator(book_database.VoteCommitRequest())
+            return response.success
     
 def send_execute_request_to_payment_executor(global_commit):
-    with grpc.insecure_channel('payment_executor:50059') as channel:
-        stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
-        response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
-        return response.success
+    with tracer.start_as_current_span("execute_request_payment_executor") as span:
+        span.set_attribute("global_commit", global_commit)
+        with grpc.insecure_channel('payment_executor:50059') as channel:
+            stub = payment_executor_grpc.PaymentExecutorServiceStub(channel)
+            response = stub.ExecutePayment(payment_executor.PaymentExecutionRequest(commitStatus=global_commit))
+            return response.success
     
 def send_execute_request_to_book_database(global_commit, item):
-    delaytime = {"1": 0, "2": 20, "3": 20, "4": 20, "5": 20, "6": 20}
-    print(f'[Orcer Executor] Book Id is {item.book.id}. Add a delay time {delaytime[item.book.id]}')
-    time.sleep(delaytime[item.book.id])
-    print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')
-    with grpc.insecure_channel('book_database_1:50056') as channel:
-        stub = book_database_grpc.BookDatabaseServiceStub(channel)
-        book = stub.GetBook(book_database.GetBookRequest(
-            request_id=item.book.id, # Learning Python (String)
-            commitStatus=global_commit
-        ), global_commit)
+    with tracer.start_as_current_span("execute_request_book_database") as span:
+        span.set_attribute("global_commit", global_commit)
+        delaytime = {"1": 0, "2": 20, "3": 20, "4": 20, "5": 20, "6": 20}
+        print(f'[Orcer Executor] Book Id is {item.book.id}. Add a delay time {delaytime[item.book.id]}')
+        time.sleep(delaytime[item.book.id])
+        print(f'[Order Executor] Send request of getting the book data. requesting book_id is {item.book.id}')
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            book = stub.GetBook(book_database.GetBookRequest(
+                request_id=item.book.id, # Learning Python (String)
+                commitStatus=global_commit
+            ), global_commit)
 
-    if book and book.copiesAvailable >= item.quantity:
-        book.copiesAvailable -= item.quantity
-        # Change the available counts.
-        print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+item.quantity} to {book.copiesAvailable}')
-    else:
-        print(f'[Order Executor] BookId: {book.id} copiedAvailable is less than ordering quantity.')
-        return False
-    
-    print(f'[Order Executor] Send request of updating the book data.') 
-    with grpc.insecure_channel('book_database_1:50056') as channel:
-        stub = book_database_grpc.BookDatabaseServiceStub(channel)
-        response = stub.UpdateBook(book_database.UpdateBookRequest(
-            book=book, 
-            commitStatus=global_commit)
-        )
-        return response.success
+        if book and book.copiesAvailable >= item.quantity:
+            book.copiesAvailable -= item.quantity
+            # Change the available counts.
+            print(f'[Order Executor] Changed the copiedAvailable from {book.copiesAvailable+item.quantity} to {book.copiesAvailable}')
+        else:
+            print(f'[Order Executor] BookId: {book.id} copiedAvailable is less than ordering quantity.')
+            return False
+        
+        print(f'[Order Executor] Send request of updating the book data.') 
+        with grpc.insecure_channel('book_database_1:50056') as channel:
+            stub = book_database_grpc.BookDatabaseServiceStub(channel)
+            response = stub.UpdateBook(book_database.UpdateBookRequest(
+                book=book, 
+                commitStatus=global_commit)
+            )
+            return response.success
     
 class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     def __init__(self):
@@ -127,41 +166,46 @@ class OrderExecutorService(order_executor_grpc.OrderExecutorServiceServicer):
     #     return order_executor.GlobalCommitResponse(alive=True)
     
     def execute_order(self, order):
-        self.is_busy = True # to indicate when they do not need the critical regiion
+        with tracer.start_as_current_span("execute_order") as span:
+            span.set_attribute("order_id", order.orderId)
+            order_counter.add(1, {"status": "processed"})
+            order_status.add(1)
+            self.is_busy = True # to indicate when they do not need the critical regiion
 
-        global_commit = self.SendVoteRequestToParticipants()
-        print(f"global_commit ={type(global_commit)}= {global_commit}")
+            global_commit = self.SendVoteRequestToParticipants()
+            span.add_event(f"Global commit: {global_commit}")
+            print(f"global_commit ={type(global_commit)}= {global_commit}")
 
-        with futures.ThreadPoolExecutor() as executor:
-            payment_future = executor.submit(send_execute_request_to_payment_executor, global_commit)
-        
-            database_futures_list = []
-            for item in order.items:
-                future = executor.submit(send_execute_request_to_book_database, global_commit, item)
-                database_futures_list.append(future)
-
-            futures.wait([payment_future] + database_futures_list, return_when=futures.ALL_COMPLETED)
+            with futures.ThreadPoolExecutor() as executor:
+                payment_future = executor.submit(send_execute_request_to_payment_executor, global_commit)
             
-        # Check all future results for True
-        payment_success = payment_future.result()
-        database_all_success = all(future.result() for future in database_futures_list)
+                database_futures_list = []
+                for item in order.items:
+                    future = executor.submit(send_execute_request_to_book_database, global_commit, item)
+                    database_futures_list.append(future)
 
-        if payment_success and database_all_success:
-            print("[Order Executor] Payment execution is successful")
-            print('[Order Executor] All book database updates are successful.')
-            for item in order.items:
-                print(f'[Order Executor] Execution success. user name: {order.user.name}, ordered book: {item.book.title}, quantity: {item.quantity}')
-        else:
-            if not payment_success:
-                print("[Order Executor] Payment executes failed.")
-            if not database_all_success:
-                print('[Order Executor] Some book database updates failed.')
-            print(f'[Order Executor] Execution failed, even though we showed the order-successful confirmation page. \
-                Send mail or call to the user contact: {order.user.contact} user name: {order.user.name}')   
+                futures.wait([payment_future] + database_futures_list, return_when=futures.ALL_COMPLETED)
+                
+            # Check all future results for True
+            payment_success = payment_future.result()
+            database_all_success = all(future.result() for future in database_futures_list)
 
-        print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
-        time.sleep(30)  # Simulate time taken to process the order
-        self.is_busy = False
+            if payment_success and database_all_success:
+                print("[Order Executor] Payment execution is successful")
+                print('[Order Executor] All book database updates are successful.')
+                for item in order.items:
+                    print(f'[Order Executor] Execution success. user name: {order.user.name}, ordered book: {item.book.title}, quantity: {item.quantity}')
+            else:
+                if not payment_success:
+                    print("[Order Executor] Payment executes failed.")
+                if not database_all_success:
+                    print('[Order Executor] Some book database updates failed.')
+                print(f'[Order Executor] Execution failed, even though we showed the order-successful confirmation page. \
+                    Send mail or call to the user contact: {order.user.contact} user name: {order.user.name}')   
+
+            print(f"Order with id {order.orderId} with priority {order.priority} has been executed by executor Replica-{replica_id} ...")
+            time.sleep(30)  # Simulate time taken to process the order
+            self.is_busy = False
 
     def dequeue_order(self):
         while True:
